@@ -9,12 +9,8 @@
         <input type="email" v-model="correo" placeholder="Correo" required />
 
         <div class="password-field">
-          <input 
-            :type="mostrarContraseña ? 'text' : 'password'" 
-            v-model="contraseña" 
-            placeholder="Contraseña" 
-            required 
-          />
+          <input :type="mostrarContraseña ? 'text' : 'password'" v-model="contraseña" placeholder="Contraseña"
+            required />
           <span class="ojito" @click="mostrarContraseña = !mostrarContraseña">
             {{ mostrarContraseña ? '🙈' : '👁️' }}
           </span>
@@ -24,7 +20,14 @@
       </form>
 
       <p class="mensaje">
-        ¿No tienes cuenta? 
+        ¿Prefieres no usar contraseña?
+        <span @click="$router.push('/magic-link')">
+          Accede con un enlace mágico ✨
+        </span>
+      </p>
+
+      <p class="mensaje">
+        ¿No tienes cuenta?
         <span @click="$router.push('/register')">Regístrate</span>
       </p>
 
@@ -71,7 +74,7 @@ export default {
         });
 
         localStorage.setItem("token", respuesta.data.token);
-        localStorage.setItem("nombreUsuario", respuesta.data.nombre); 
+        localStorage.setItem("nombreUsuario", respuesta.data.nombre);
         this.exito = "Login exitoso! Redirigiendo...";
         setTimeout(() => this.$router.push("/usuario"), 1000);
       } catch (err) {
@@ -102,7 +105,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   background-color: #ffffffcc;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -199,26 +202,70 @@ export default {
   transition: 0.2s all;
 }
 
-.formulario button:hover { background-color: #2980b9; }
+.formulario button:hover {
+  background-color: #2980b9;
+}
 
-.mensaje { margin-top: 10px; font-size: 14px; color: #34495e; }
-.mensaje span { color: #3498db; cursor: pointer; font-weight: 600; }
+.mensaje {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #34495e;
+}
 
-.error { color: #e74c3c; font-weight: bold; }
-.exito { color: #2ecc71; font-weight: bold; }
+.mensaje span {
+  color: #3498db;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.error {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.exito {
+  color: #2ecc71;
+  font-weight: bold;
+}
 
 @media (max-width: 768px) {
-  .contenido h1 { font-size: 36px; }
-  .contenido h2 { font-size: 22px; }
-  .nav-right button { padding: 8px 15px; font-size: 13px; }
+  .contenido h1 {
+    font-size: 36px;
+  }
+
+  .contenido h2 {
+    font-size: 22px;
+  }
+
+  .nav-right button {
+    padding: 8px 15px;
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 480px) {
-  .navbar { flex-direction: column; gap: 10px; padding: 10px 20px; }
-  .nav-right { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-  .nav-right button { width: 100%; }
-  .formulario { width: 90%; }
+  .navbar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 20px;
+  }
+
+  .nav-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .nav-right button {
+    width: 100%;
+  }
+
+  .formulario {
+    width: 90%;
+  }
 }
+
 .password-field {
   position: relative;
   display: flex;

@@ -1,17 +1,6 @@
 <template>
   <div class="home">
-    <!-- Navbar -->
-    <nav class="navbar">
-      <div class="nav-left">
-        <span class="logo" @click="$router.push('/')">Home</span>
-      </div>
-      <div class="nav-right">
-        <button @click="$router.push('/login')">Iniciar sesión</button>
-        <button @click="$router.push('/register')">Registrar</button>
-      </div>
-    </nav>
 
-    <!-- Contenido central -->
     <div class="contenido">
       <h1>Registro</h1>
       <h2>Crea tu cuenta</h2>
@@ -23,8 +12,31 @@
         <input type="text" v-model="telefono" placeholder="Número de Teléfono" required />
         <input type="email" v-model="correo" placeholder="Correo" required />
         <input type="number" v-model="edad" placeholder="Edad" required min="1" />
-        <input type="password" v-model="contraseña" placeholder="Contraseña" required />
-        <input type="password" v-model="confirmarContraseña" placeholder="Confirmar Contraseña" required />
+
+        <div class="password-field">
+          <input
+            :type="mostrarContraseña ? 'text' : 'password'"
+            v-model="contraseña"
+            placeholder="Contraseña"
+            required
+          />
+          <span class="ojito" @click="mostrarContraseña = !mostrarContraseña">
+            {{ mostrarContraseña ? '🙈' : '👁️' }}
+          </span>
+        </div>
+
+        <div class="password-field">
+          <input
+            :type="mostrarConfirmar ? 'text' : 'password'"
+            v-model="confirmarContraseña"
+            placeholder="Confirmar Contraseña"
+            required
+          />
+          <span class="ojito" @click="mostrarConfirmar = !mostrarConfirmar">
+            {{ mostrarConfirmar ? '🙈' : '👁️' }}
+          </span>
+        </div>
+
         <button type="submit">Registrar</button>
       </form>
 
@@ -54,17 +66,38 @@ export default {
       edad: null,
       contraseña: "",
       confirmarContraseña: "",
+      mostrarContraseña: false,
+      mostrarConfirmar: false,
       error: "",
       exito: "",
     };
   },
   methods: {
+    validarCampos() {
+      const nombreRegex = /^[a-zA-ZÀ-ÿ\s]{2,50}$/;
+      const telefonoRegex = /^\d{10}$/;
+      const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const contraseñaRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+
+      if (!nombreRegex.test(this.nombre)) return "Nombre inválido";
+      if (!nombreRegex.test(this.apellidoPaterno)) return "Apellido Paterno inválido";
+      if (!nombreRegex.test(this.apellidoMaterno)) return "Apellido Materno inválido";
+      if (!telefonoRegex.test(this.telefono)) return "Teléfono inválido (10 dígitos)";
+      if (!correoRegex.test(this.correo)) return "Correo inválido";
+      if (this.edad <= 0) return "Edad inválida";
+      if (!contraseñaRegex.test(this.contraseña)) 
+        return "Contraseña debe tener al menos 6 caracteres, incluir números y letras";
+      if (this.contraseña !== this.confirmarContraseña) return "Las contraseñas no coinciden";
+
+      return null;
+    },
     async registrar() {
       this.error = "";
       this.exito = "";
 
-      if (this.contraseña !== this.confirmarContraseña) {
-        this.error = "Las contraseñas no coinciden";
+      const validacion = this.validarCampos();
+      if (validacion) {
+        this.error = validacion;
         return;
       }
 
@@ -81,7 +114,7 @@ export default {
         this.exito = "Registro exitoso! Redirigiendo al login...";
         setTimeout(() => this.$router.push("/login"), 1500);
       } catch (err) {
-        this.error = err.response?.data?.message || "Error al registrar, intenta de nuevo.";
+        this.error = err.response?.data?.mensaje || "Error al registrar, intenta de nuevo.";
       }
     },
   },
@@ -89,6 +122,7 @@ export default {
 </script>
 
 <style scoped>
+/* reutiliza tu CSS anterior */
 /* General */
 .home {
   display: flex;
@@ -207,5 +241,18 @@ export default {
   .nav-right { display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .nav-right button { width: 100%; }
   .formulario { width: 90%; }
+}
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field .ojito {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
 }
 </style>

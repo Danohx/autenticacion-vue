@@ -1,17 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomePage from '../components/HomePage.vue';
-import RegisterPage from '../components/RegisterPage.vue';
-import LoginPage from '../components/LoginPage.vue';
+import HomeScreen from '../screens/visitante/HomeScreen.vue';
+import LoginScreen from '../screens/visitante/LoginScreen.vue';
+import RegisterScreen from '../screens/visitante/RegisterScreen.vue';
+import UsuarioScreen from '../screens/usuarios/UsuarioScreen.vue';
 
 const routes = [
-  { path: '/', name: 'Home', component: HomePage },
-  { path: '/register', name: 'Register', component: RegisterPage },
-  { path: '/login', name: 'Login', component: LoginPage }
+  { path: '/', name: 'Home', component: HomeScreen },
+  { path: '/login', name: 'Login', component: LoginScreen },
+  { path: '/register', name: 'Register', component: RegisterScreen },
+  { path: '/usuario', component: UsuarioScreen }
 ];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 });
 
 export default router;

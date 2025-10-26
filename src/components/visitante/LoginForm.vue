@@ -1,17 +1,6 @@
 <template>
   <div class="home">
-    <!-- Navbar -->
-    <nav class="navbar">
-      <div class="nav-left">
-        <span class="logo" @click="$router.push('/')">Home</span>
-      </div>
-      <div class="nav-right">
-        <button @click="$router.push('/login')">Iniciar sesión</button>
-        <button @click="$router.push('/register')">Registrar</button>
-      </div>
-    </nav>
 
-    <!-- Contenido central -->
     <div class="contenido">
       <h1>Login</h1>
       <h2>Inicia sesión en tu cuenta</h2>
@@ -60,9 +49,20 @@ export default {
     };
   },
   methods: {
+    validarCampos() {
+      const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!correoRegex.test(this.correo)) return "Correo inválido";
+      return null;
+    },
     async login() {
       this.error = "";
       this.exito = "";
+
+      const validacion = this.validarCampos();
+      if (validacion) {
+        this.error = validacion;
+        return;
+      }
 
       try {
         const respuesta = await axios.post("http://localhost:4000/auth/login", {
@@ -71,10 +71,11 @@ export default {
         });
 
         localStorage.setItem("token", respuesta.data.token);
+        localStorage.setItem("nombreUsuario", respuesta.data.nombre); 
         this.exito = "Login exitoso! Redirigiendo...";
-        setTimeout(() => this.$router.push("/"), 1000);
+        setTimeout(() => this.$router.push("/usuario"), 1000);
       } catch (err) {
-        this.error = err.response?.data?.message || "Error al iniciar sesión, intenta de nuevo.";
+        this.error = err.response?.data?.mensaje || "Error al iniciar sesión, intenta de nuevo.";
       }
     },
   },
@@ -82,6 +83,7 @@ export default {
 </script>
 
 <style scoped>
+/* reutiliza tu CSS anterior */
 /* General */
 .home {
   display: flex;
@@ -216,5 +218,18 @@ export default {
   .nav-right { display: flex; flex-direction: column; gap: 8px; width: 100%; }
   .nav-right button { width: 100%; }
   .formulario { width: 90%; }
+}
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field .ojito {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
 }
 </style>

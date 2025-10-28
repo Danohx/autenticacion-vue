@@ -54,7 +54,9 @@ export default {
       }
 
       try {
-        await axios.post("http://localhost:4000/auth/magic-link", {
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+        
+        await axios.post(`${API_URL}/auth/magic-link`, {
           correo: this.correo,
         });
         this.exito = "Se ha enviado un enlace mágico a tu correo. Revisa tu bandeja de entrada.";

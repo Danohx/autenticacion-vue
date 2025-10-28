@@ -68,8 +68,8 @@
 <script>
 import axios from "axios";
 // (Asumimos que la URL base de tu API está en una variable, es una buena práctica)
-const API = "http://localhost:4000"; 
-
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+  
 export default {
   name: "LoginPage",
   data() {

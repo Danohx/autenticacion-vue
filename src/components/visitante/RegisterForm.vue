@@ -102,7 +102,9 @@ export default {
       }
 
       try {
-        await axios.post("http://localhost:4000/auth/register", {
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+        
+        await axios.post(`${API_URL}/auth/register`, {
           nombre: this.nombre,
           apellido_paterno: this.apellidoPaterno,
           apellido_materno: this.apellidoMaterno,

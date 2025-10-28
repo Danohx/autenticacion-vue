@@ -16,10 +16,36 @@ export default {
 </script>
 
 <style scoped>
-.login-screen {
-  background: linear-gradient(to right, #f5f7fa, #c3cfe2);
-  min-height: 100vh;
+.screen {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-gray-100) 100%);
+}
+
+.screen__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.screen__content {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .screen__main {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .screen__main {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
 }
 </style>

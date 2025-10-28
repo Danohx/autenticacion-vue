@@ -1,11 +1,25 @@
 <template>
   <nav class="navbar">
-    <div class="nav-left">
-      <span class="logo" @click="$router.push('/')">Home</span>
-    </div>
-    <div class="nav-right">
-      <button @click="$router.push('/login')">Iniciar sesión</button>
-      <button @click="$router.push('/register')">Registrar</button>
+    <div class="navbar__container">
+      <div class="navbar__brand" @click="$router.push('/')">
+        <span class="navbar__logo">Home</span>
+      </div>
+      
+      <div class="navbar__actions">
+        <button 
+          @click="$router.push('/login')" 
+          class="btn btn--secondary"
+        >
+          Iniciar sesión
+        </button>
+        
+        <button 
+          @click="$router.push('/register')" 
+          class="btn btn--primary"
+        >
+          Registrar
+        </button>
+      </div>
     </div>
   </nav>
 </template>
@@ -18,39 +32,66 @@ export default {
 
 <style scoped>
 .navbar {
-  width: 100%;
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #ffffffcc;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-200);
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(8px);
 }
 
-.logo {
-  font-size: 24px;
-  font-weight: bold;
+.navbar__container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.navbar__brand {
+  display: flex;
+  align-items: center;
+}
+
+.navbar__logo {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
   cursor: pointer;
-  color: #2c3e50;
+  transition: color 0.2s ease;
 }
 
-.nav-right button {
-  margin-left: 15px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background-color: #3498db;
-  color: white;
-  transition: 0.2s all;
+.navbar__logo:hover {
+  color: var(--color-accent);
 }
 
-.nav-right button:hover {
-  background-color: #2980b9;
+.navbar__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar__container {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .navbar__actions {
+    gap: var(--spacing-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar__container {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .navbar__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 </style>

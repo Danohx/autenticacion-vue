@@ -1,21 +1,54 @@
 <template>
   <nav class="navbar">
-    <div class="nav-left">
-      <div class="logo" @click="$router.push('/usuario')">Home</div>
-    </div>
-    <div class="nav-right">
-      <button @click="cerrarSesion">Cerrar sesión</button>
+    <div class="navbar__container">
+      <div class="navbar__brand" @click="$router.push('/usuario')">
+        <span class="navbar__logo">Home</span>
+      </div>
+      
+      <div class="navbar__actions">
+        <button 
+          @click="$router.push('/seguridad')" 
+          class="btn btn--secondary"
+        >
+          Seguridad
+        </button>
+
+        <button 
+          @click="cerrarSesion" 
+          class="btn btn--danger"
+        >
+          Cerrar sesión
+        </button>
+      </div>
     </div>
   </nav>
 </template>
 
 <script>
+import axios from "axios";
+const API_URL = "http://localhost:4000";
+
 export default {
   name: "NavbarUsuario",
   methods: {
-    cerrarSesion() {
+    async cerrarSesion() {
+      const refreshToken = localStorage.getItem("refreshToken");
+      const sessionId = localStorage.getItem("sessionId");
+
+      try {
+        await axios.post(`${API_URL}/auth/logout`, {
+          refreshToken: refreshToken,
+          sessionId: sessionId,
+        });
+      } catch (error) {
+        console.warn("Error al cerrar sesión en backend:", error.message);
+      }
+
       localStorage.removeItem("token");
-      localStorage.removeItem("nombreUsuario"); // Guardaremos el nombre del usuario al loguear
+      localStorage.removeItem("nombreUsuario");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("sessionId");
+      
       this.$router.push("/login");
     },
   },
@@ -24,38 +57,66 @@ export default {
 
 <style scoped>
 .navbar {
-  width: 100%;
-  padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #ffffffcc;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-200);
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(8px);
 }
 
-.nav-left .logo {
-  font-size: 24px;
-  font-weight: bold;
+.navbar__container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.navbar__brand {
+  display: flex;
+  align-items: center;
+}
+
+.navbar__logo {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
   cursor: pointer;
-  color: #2c3e50;
+  transition: color 0.2s ease;
 }
 
-.nav-right button {
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background-color: #e74c3c;
-  color: white;
-  transition: 0.2s all;
+.navbar__logo:hover {
+  color: var(--color-accent);
 }
 
-.nav-right button:hover {
-  background-color: #c0392b;
+.navbar__actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar__container {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .navbar__actions {
+    gap: var(--spacing-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar__container {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .navbar__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 </style>

@@ -1,11 +1,14 @@
 <template>
-  <div class="home">
+  <div class="page">
     <NavbarUsuario />
-    <div class="contenido">
-        <h1>Bienvenido, {{ nombreUsuario }}!</h1>
-        <h2>Página Principal</h2>
-        <h2>Práctica Autenticación</h2>
-    </div>
+    <main class="page__main">
+      <div class="hero">
+        <div class="hero__content">
+          <h1 class="hero__title">Bienvenido, {{ nombreUsuario }}!</h1>
+          <p class="hero__subtitle">Página Principal - Práctica Autenticación</p>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
@@ -24,39 +27,63 @@ export default {
 </script>
 
 <style scoped>
-.home {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to right, #f5f7fa, #c3cfe2);
+.page {
   min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-gray-100) 100%);
 }
 
-.contenido {
-  padding: 50px 20px;
+.page__main {
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero {
   text-align: center;
+  padding: var(--spacing-2xl) 0;
 }
 
-.contenido h1 {
-  font-size: 36px;
-  color: #2c3e50;
+.hero__content {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.contenido p {
-  font-size: 18px;
-  margin-top: 10px;
+.hero__title {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.2;
 }
 
-.contenido ul {
-  margin-top: 20px;
-  list-style: none;
-  padding: 0;
+.hero__subtitle {
+  font-size: var(--font-size-xl);
+  color: var(--color-gray-600);
+  line-height: 1.6;
 }
 
-.contenido li {
-  background-color: #3498db;
-  color: white;
-  margin: 10px auto;
-  padding: 12px;
-  width: 80%;
-  border-radius: 8px;
+/* Responsive */
+@media (max-width: 768px) {
+  .page__main {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+  
+  .hero__title {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .hero__subtitle {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .page__main {
+    padding: var(--spacing-lg) var(--spacing-sm);
+  }
+  
+  .hero__title {
+    font-size: var(--font-size-2xl);
+  }
 }
 </style>

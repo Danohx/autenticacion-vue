@@ -1,7 +1,9 @@
 <template>
-  <div class="login-screen">
+  <div class="page-container">
     <Navbar />
-    <LoginForm />
+    <main class="page-content">
+      <LoginForm />
+    </main>
   </div>
 </template>
 
@@ -14,12 +16,3 @@ export default {
   components: { Navbar, LoginForm },
 };
 </script>
-
-<style scoped>
-.login-screen {
-  background: linear-gradient(to right, #f5f7fa, #c3cfe2);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-</style>

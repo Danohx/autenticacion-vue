@@ -1,44 +1,74 @@
 <template>
   <div class="home">
-
     <div class="contenido">
-      <h1>Login</h1>
-      <h2>Inicia sesión en tu cuenta</h2>
 
-      <form @submit.prevent="login" class="formulario">
-        <input type="email" v-model="correo" placeholder="Correo" required />
+      <div v-if="tfaRequerido" class="formulario-2fa">
+        <h1>Verificación 2FA</h1>
+        <h2>Ingresa el código de tu app de autenticación</h2>
 
-        <div class="password-field">
-          <input :type="mostrarContraseña ? 'text' : 'password'" v-model="contraseña" placeholder="Contraseña"
-            required />
-          <span class="ojito" @click="mostrarContraseña = !mostrarContraseña">
-            {{ mostrarContraseña ? '🙈' : '👁️' }}
+        <form @submit.prevent="verificarOTP" class="formulario">
+          <input 
+            type="text" 
+            v-model="codigoOTP" 
+            placeholder="Código de 6 dígitos" 
+            required 
+            maxlength="6"
+            pattern="\d{6}"
+          />
+          <button type="submit">Verificar Código</button>
+        </form>
+
+        <p class="mensaje">
+          <span @click="tfaRequerido = false; error = ''; exito = ''">
+            Volver al login
           </span>
-        </div>
+        </p>
 
-        <button type="submit">Iniciar sesión</button>
-      </form>
+      </div>
 
-      <p class="mensaje">
-        ¿Prefieres no usar contraseña?
-        <span @click="$router.push('/magic-link')">
-          Accede con un enlace mágico ✨
-        </span>
-      </p>
+      <div v-else class="formulario-login">
+        <h1>Login</h1>
+        <h2>Inicia sesión en tu cuenta</h2>
 
-      <p class="mensaje">
-        ¿No tienes cuenta?
-        <span @click="$router.push('/register')">Regístrate</span>
-      </p>
+        <form @submit.prevent="login" class="formulario">
+          <input type="email" v-model="correo" placeholder="Correo" required />
+
+          <div class="password-field">
+            <input :type="mostrarContraseña ? 'text' : 'password'" v-model="contraseña" placeholder="Contraseña"
+              required />
+            <span class="ojito" @click="mostrarContraseña = !mostrarContraseña">
+              {{ mostrarContraseña ? '🙈' : '👁️' }}
+            </span>
+          </div>
+
+          <button type="submit">Iniciar sesión</button>
+        </form>
+
+        <p class="mensaje">
+          ¿Prefieres no usar contraseña?
+          <span @click="$router.push('/magic-link')">
+            Accede con un enlace mágico ✨
+          </span>
+        </p>
+
+        <p class="mensaje">
+          ¿No tienes cuenta?
+          <span @click="$router.push('/register')">Regístrate</span>
+        </p>
+      </div>
+
 
       <p v-if="error" class="error">{{ error }}</p>
       <p v-if="exito" class="exito">{{ exito }}</p>
+
     </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+// (Asumimos que la URL base de tu API está en una variable, es una buena práctica)
+const API = "http://localhost:4000"; 
 
 export default {
   name: "LoginPage",
@@ -49,14 +79,25 @@ export default {
       mostrarContraseña: false,
       error: "",
       exito: "",
+
+      // --- NUEVOS DATOS PARA 2FA ---
+      // Indica si estamos esperando el código 2FA
+      tfaRequerido: false, 
+      // El token temporal que nos da el backend
+      tempToken: "",
+      // El código OTP que escribe el usuario
+      codigoOTP: "", 
     };
   },
   methods: {
     validarCampos() {
+      // ... (tu validación de correo sigue igual)
       const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!correoRegex.test(this.correo)) return "Correo inválido";
       return null;
     },
+
+    // --- MÉTODO 1: LOGIN (Email/Password) ---
     async login() {
       this.error = "";
       this.exito = "";
@@ -68,19 +109,66 @@ export default {
       }
 
       try {
-        const respuesta = await axios.post("http://localhost:4000/auth/login", {
-          correo: this.correo,
-          contraseña: this.contraseña,
+        // (Asegúrate de que tu backend en /auth/login implemente esta lógica 2FA)
+        const respuesta = await axios.post(`${API}/auth/login`, {
+          correo: this.correo, // (Cambié 'correo' a 'email' para coincidir con el backend de 2FA)
+          contraseña: this.contraseña, // (Cambié 'contraseña' a 'password')
         });
 
-        localStorage.setItem("token", respuesta.data.token);
-        localStorage.setItem("nombreUsuario", respuesta.data.nombre);
-        this.exito = "Login exitoso! Redirigiendo...";
-        setTimeout(() => this.$router.push("/usuario"), 1000);
+        // --- LÓGICA 2FA ---
+        if (respuesta.data.tfa_required) {
+          // PASO 1.5: El backend pide 2FA
+          this.tfaRequerido = true;
+          this.tempToken = respuesta.data.temp_token;
+          this.exito = "Inicia sesión con tu código de autenticación.";
+          
+          // Limpiamos la contraseña por seguridad
+          this.contraseña = ""; 
+        
+        } else {
+          // PASO FINAL: Login directo (2FA no estaba activo)
+          this.guardarTokensYRedirigir(respuesta.data);
+        }
+
       } catch (err) {
         this.error = err.response?.data?.mensaje || "Error al iniciar sesión, intenta de nuevo.";
       }
     },
+
+    // --- MÉTODO 2: VERIFICAR 2FA (OTP) ---
+    async verificarOTP() {
+        if (!this.codigoOTP || this.codigoOTP.length < 6) {
+            this.error = "Ingresa un código OTP válido de 6 dígitos.";
+            return;
+        }
+        this.error = "";
+
+        try {
+            const respuesta = await axios.post(`${API}/auth/verify-otp`, {
+                temp_token: this.tempToken,
+                token: this.codigoOTP // 'token' es el nombre del campo en tu backend
+            });
+
+            // PASO FINAL: Ahora sí, login exitoso
+            this.guardarTokensYRedirigir(respuesta.data);
+
+        } catch (err) {
+            this.error = err.response?.data?.mensaje || "Error al verificar el código.";
+        }
+    },
+
+    // --- (Helper) Función reutilizable para guardar sesión ---
+    guardarTokensYRedirigir(data) {
+        // (Tu backend de 2FA devuelve 'accessToken' y 'refreshToken')
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        localStorage.setItem("sessionId", data.sessionId);
+        // (Tu backend de 2FA no devuelve 'nombre', tendrías que añadirlo o quitarlo aquí)
+        // localStorage.setItem("nombreUsuario", data.nombre); 
+
+        this.exito = "Login exitoso! Redirigiendo...";
+        setTimeout(() => this.$router.push("/usuario"), 1000);
+    }
   },
 };
 </script>

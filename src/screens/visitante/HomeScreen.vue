@@ -1,7 +1,9 @@
 <template>
-  <div class="home">
+  <div class="screen">
     <AppNavbar />
-    <HomeContent />
+    <main class="screen__main">
+      <HomeContent />
+    </main>
   </div>
 </template>
 
@@ -16,12 +18,24 @@ export default {
 </script>
 
 <style scoped>
-.home {
+.screen {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to right, #f5f7fa, #c3cfe2);
-  color: #2c3e50;
+  background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-gray-100) 100%);
+}
+
+.screen__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .screen__main {
+    padding: var(--spacing-md);
+  }
 }
 </style>

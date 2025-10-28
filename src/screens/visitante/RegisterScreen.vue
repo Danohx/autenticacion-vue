@@ -1,7 +1,9 @@
 <template>
-  <div class="register-screen">
+  <div class="page-container">
     <Navbar />
-    <RegisterForm />
+    <main class="page-content">
+      <RegisterForm />
+    </main>
   </div>
 </template>
 
@@ -14,12 +16,3 @@ export default {
   components: { Navbar, RegisterForm },
 };
 </script>
-
-<style scoped>
-.register-screen {
-  background: linear-gradient(to right, #f5f7fa, #c3cfe2);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-</style>

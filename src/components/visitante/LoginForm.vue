@@ -7,11 +7,11 @@
         <h2>Ingresa el código de tu app de autenticación</h2>
 
         <form @submit.prevent="verificarOTP" class="formulario">
-          <input 
-            type="text" 
-            v-model="codigoOTP" 
-            placeholder="Código de 6 dígitos" 
-            required 
+          <input
+            type="text"
+            v-model="codigoOTP"
+            placeholder="Código de 6 dígitos"
+            required
             maxlength="6"
             pattern="\d{6}"
           />
@@ -34,10 +34,10 @@
           <input type="email" v-model="correo" placeholder="Correo" required />
 
           <div class="password-field">
-            <input :type="mostrarContraseña ? 'text' : 'password'" v-model="contraseña" placeholder="Contraseña"
+            <input :type="mostrarContrasena ? 'text' : 'password'" v-model="contrasena" placeholder="Contraseña"
               required />
-            <span class="ojito" @click="mostrarContraseña = !mostrarContraseña">
-              {{ mostrarContraseña ? '🙈' : '👁️' }}
+            <span class="ojito" @click="mostrarContrasena = !mostrarContrasena">
+              {{ mostrarContrasena ? '🙈' : '👁️' }}
             </span>
           </div>
 
@@ -57,7 +57,6 @@
         </p>
       </div>
 
-
       <p v-if="error" class="error">{{ error }}</p>
       <p v-if="exito" class="exito">{{ exito }}</p>
 
@@ -67,37 +66,33 @@
 
 <script>
 import axios from "axios";
-// (Asumimos que la URL base de tu API está en una variable, es una buena práctica)
 const API = process.env.VUE_APP_API_URL || "http://localhost:4000";
-  
+
 export default {
   name: "LoginPage",
   data() {
     return {
       correo: "",
-      contraseña: "",
-      mostrarContraseña: false,
+      // --- CAMBIO AQUÍ: Nombre de la variable ---
+      contrasena: "",
+      // --- CAMBIO AQUÍ: Nombre de la variable ---
+      mostrarContrasena: false,
       error: "",
       exito: "",
 
-      // --- NUEVOS DATOS PARA 2FA ---
-      // Indica si estamos esperando el código 2FA
-      tfaRequerido: false, 
-      // El token temporal que nos da el backend
+      // Datos 2FA (sin cambios)
+      tfaRequerido: false,
       tempToken: "",
-      // El código OTP que escribe el usuario
-      codigoOTP: "", 
+      codigoOTP: "",
     };
   },
   methods: {
     validarCampos() {
-      // ... (tu validación de correo sigue igual)
       const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!correoRegex.test(this.correo)) return "Correo inválido";
       return null;
     },
 
-    // --- MÉTODO 1: LOGIN (Email/Password) ---
     async login() {
       this.error = "";
       this.exito = "";
@@ -109,24 +104,20 @@ export default {
       }
 
       try {
-        // (Asegúrate de que tu backend en /auth/login implemente esta lógica 2FA)
         const respuesta = await axios.post(`${API}/auth/login`, {
-          correo: this.correo, // (Cambié 'correo' a 'email' para coincidir con el backend de 2FA)
-          contraseña: this.contraseña, // (Cambié 'contraseña' a 'password')
+          correo: this.correo,
+          // --- CAMBIO AQUÍ: Clave enviada al backend ---
+          contrasena: this.contrasena,
         });
 
-        // --- LÓGICA 2FA ---
         if (respuesta.data.tfa_required) {
-          // PASO 1.5: El backend pide 2FA
           this.tfaRequerido = true;
           this.tempToken = respuesta.data.temp_token;
           this.exito = "Inicia sesión con tu código de autenticación.";
-          
-          // Limpiamos la contraseña por seguridad
-          this.contraseña = ""; 
-        
+          // --- CAMBIO AQUÍ: Limpiamos la variable correcta ---
+          this.contrasena = "";
+
         } else {
-          // PASO FINAL: Login directo (2FA no estaba activo)
           this.guardarTokensYRedirigir(respuesta.data);
         }
 
@@ -135,7 +126,6 @@ export default {
       }
     },
 
-    // --- MÉTODO 2: VERIFICAR 2FA (OTP) ---
     async verificarOTP() {
         if (!this.codigoOTP || this.codigoOTP.length < 6) {
             this.error = "Ingresa un código OTP válido de 6 dígitos.";
@@ -146,10 +136,9 @@ export default {
         try {
             const respuesta = await axios.post(`${API}/auth/verify-otp`, {
                 temp_token: this.tempToken,
-                token: this.codigoOTP // 'token' es el nombre del campo en tu backend
+                token: this.codigoOTP
             });
 
-            // PASO FINAL: Ahora sí, login exitoso
             this.guardarTokensYRedirigir(respuesta.data);
 
         } catch (err) {
@@ -157,14 +146,12 @@ export default {
         }
     },
 
-    // --- (Helper) Función reutilizable para guardar sesión ---
     guardarTokensYRedirigir(data) {
-        // (Tu backend de 2FA devuelve 'accessToken' y 'refreshToken')
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
         localStorage.setItem("sessionId", data.sessionId);
-        // (Tu backend de 2FA no devuelve 'nombre', tendrías que añadirlo o quitarlo aquí)
-        // localStorage.setItem("nombreUsuario", data.nombre); 
+        // Descomenta si tu backend devuelve 'nombre' en el login exitoso
+        localStorage.setItem("nombreUsuario", data.nombre);
 
         this.exito = "Login exitoso! Redirigiendo...";
         setTimeout(() => this.$router.push("/usuario"), 1000);

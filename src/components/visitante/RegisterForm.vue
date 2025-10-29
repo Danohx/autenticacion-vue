@@ -15,21 +15,21 @@
 
         <div class="password-field">
           <input
-            :type="mostrarContraseña ? 'text' : 'password'"
-            v-model="contraseña"
+            :type="mostrarContrasena ? 'text' : 'password'"
+            v-model="contrasena"
             placeholder="Contraseña"
             required
           />
-          <span class="ojito" @click="mostrarContraseña = !mostrarContraseña">
-            {{ mostrarContraseña ? '🙈' : '👁️' }}
+          <span class="ojito" @click="mostrarContrasena = !mostrarContrasena">
+            {{ mostrarContrasena ? '🙈' : '👁️' }}
           </span>
         </div>
 
         <div class="password-field">
           <input
             :type="mostrarConfirmar ? 'text' : 'password'"
-            v-model="confirmarContraseña"
-            placeholder="Confirmar Contraseña"
+            v-model="confirmarContrasena"
+            placeholder="Confirmar contrasena"
             required
           />
           <span class="ojito" @click="mostrarConfirmar = !mostrarConfirmar">
@@ -64,9 +64,9 @@ export default {
       telefono: "",
       correo: "",
       edad: null,
-      contraseña: "",
-      confirmarContraseña: "",
-      mostrarContraseña: false,
+      contrasena: "",
+      confirmarContrasena: "",
+      mostrarContrasena: false,
       mostrarConfirmar: false,
       error: "",
       exito: "",
@@ -77,7 +77,7 @@ export default {
       const nombreRegex = /^[a-zA-ZÀ-ÿ\s]{2,50}$/;
       const telefonoRegex = /^\d{10}$/;
       const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const contraseñaRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+      const contrasenaRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 
       if (!nombreRegex.test(this.nombre)) return "Nombre inválido";
       if (!nombreRegex.test(this.apellidoPaterno)) return "Apellido Paterno inválido";
@@ -85,9 +85,9 @@ export default {
       if (!telefonoRegex.test(this.telefono)) return "Teléfono inválido (10 dígitos)";
       if (!correoRegex.test(this.correo)) return "Correo inválido";
       if (this.edad <= 0) return "Edad inválida";
-      if (!contraseñaRegex.test(this.contraseña)) 
-        return "Contraseña debe tener al menos 6 caracteres, incluir números y letras";
-      if (this.contraseña !== this.confirmarContraseña) return "Las contraseñas no coinciden";
+      if (!contrasenaRegex.test(this.contrasena)) 
+        return "contrasena debe tener al menos 6 caracteres, incluir números y letras";
+      if (this.contrasena !== this.confirmarContrasena) return "Las contrasenas no coinciden";
 
       return null;
     },
@@ -111,7 +111,7 @@ export default {
           telefono: this.telefono,
           correo: this.correo,
           edad: this.edad,
-          contraseña: this.contraseña
+          contrasena: this.contrasena
         });
         this.exito = "Registro exitoso! Redirigiendo al login...";
         setTimeout(() => this.$router.push("/login"), 1500);

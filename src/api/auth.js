@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:4000/auth";
+const API = process.env.VUE_APP_API_URL || "http://localhost:4000";
 
 export default {
   register(data) {

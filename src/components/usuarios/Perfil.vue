@@ -100,7 +100,7 @@ import NavbarUsuario from "./NavbarUsuario.vue";
 import axios from "axios";
 import QrcodeVue from 'qrcode.vue';
 
-const API_URL = process.env.VUE_APP_API_URL || "http://localhost:4000";
+const API = process.env.VUE_APP_API_URL || "http://localhost:4000";
 
 export default {
   name: "SeguridadPage",

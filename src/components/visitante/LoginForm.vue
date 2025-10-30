@@ -5,7 +5,6 @@
       <div v-if="tfaRequerido" class="formulario-2fa">
         <h1>Verificación 2FA</h1>
         <h2>Ingresa el código de tu app de autenticación</h2>
-
         <form @submit.prevent="verificarOTP" class="formulario">
           <input
             type="text"
@@ -17,13 +16,11 @@
           />
           <button type="submit">Verificar Código</button>
         </form>
-
         <p class="mensaje">
           <span @click="tfaRequerido = false; error = ''; exito = ''">
             Volver al login
           </span>
         </p>
-
       </div>
 
       <div v-else class="formulario-login">
@@ -32,25 +29,25 @@
 
         <form @submit.prevent="login" class="formulario">
           <input type="email" v-model="correo" placeholder="Correo" required />
-
           <div class="password-field">
-            <input :type="mostrarContrasena ? 'text' : 'password'" v-model="contrasena" placeholder="Contraseña"
-              required />
+            <input :type="mostrarContrasena ? 'text' : 'password'" v-model="contrasena" placeholder="Contraseña" required />
             <span class="ojito" @click="mostrarContrasena = !mostrarContrasena">
               {{ mostrarContrasena ? '🙈' : '👁️' }}
             </span>
           </div>
-
           <button type="submit">Iniciar sesión</button>
         </form>
 
+        <button @click="iniciarConPasskey" class="btn-passkey" :disabled="isPasskeyLoading">
+           <span v-if="isPasskeyLoading">Verificando...</span>
+           <span v-else>🔑 Iniciar sesión con Passkey</span>
+        </button>
         <p class="mensaje">
           ¿Prefieres no usar contraseña?
           <span @click="$router.push('/magic-link')">
             Accede con un enlace mágico ✨
           </span>
         </p>
-
         <p class="mensaje">
           ¿No tienes cuenta?
           <span @click="$router.push('/register')">Regístrate</span>
@@ -66,6 +63,8 @@
 
 <script>
 import axios from "axios";
+import { startAuthentication } from '@simplewebauthn/browser';
+
 const API = process.env.VUE_APP_API_URL || "http://localhost:4000";
 
 export default {
@@ -73,17 +72,14 @@ export default {
   data() {
     return {
       correo: "",
-      // --- CAMBIO AQUÍ: Nombre de la variable ---
       contrasena: "",
-      // --- CAMBIO AQUÍ: Nombre de la variable ---
       mostrarContrasena: false,
       error: "",
       exito: "",
-
-      // Datos 2FA (sin cambios)
       tfaRequerido: false,
       tempToken: "",
       codigoOTP: "",
+      isPasskeyLoading: false,
     };
   },
   methods: {
@@ -96,7 +92,6 @@ export default {
     async login() {
       this.error = "";
       this.exito = "";
-
       const validacion = this.validarCampos();
       if (validacion) {
         this.error = validacion;
@@ -106,7 +101,6 @@ export default {
       try {
         const respuesta = await axios.post(`${API}/auth/login`, {
           correo: this.correo,
-          // --- CAMBIO AQUÍ: Clave enviada al backend ---
           contrasena: this.contrasena,
         });
 
@@ -114,48 +108,88 @@ export default {
           this.tfaRequerido = true;
           this.tempToken = respuesta.data.temp_token;
           this.exito = "Inicia sesión con tu código de autenticación.";
-          // --- CAMBIO AQUÍ: Limpiamos la variable correcta ---
           this.contrasena = "";
-
         } else {
           this.guardarTokensYRedirigir(respuesta.data);
         }
-
       } catch (err) {
         this.error = err.response?.data?.mensaje || "Error al iniciar sesión, intenta de nuevo.";
       }
     },
 
     async verificarOTP() {
-        if (!this.codigoOTP || this.codigoOTP.length < 6) {
-            this.error = "Ingresa un código OTP válido de 6 dígitos.";
-            return;
-        }
-        this.error = "";
-
-        try {
-            const respuesta = await axios.post(`${API}/auth/verify-otp`, {
-                temp_token: this.tempToken,
-                token: this.codigoOTP
-            });
-
-            this.guardarTokensYRedirigir(respuesta.data);
-
-        } catch (err) {
-            this.error = err.response?.data?.mensaje || "Error al verificar el código.";
-        }
+      if (!this.codigoOTP || this.codigoOTP.length < 6) {
+        this.error = "El código debe tener 6 dígitos";
+        return;
+      }
+      this.error = "";
+      try {
+        const respuesta = await axios.post(`${API}/auth/verify-otp`, {
+          temp_token: this.tempToken,
+          token: this.codigoOTP
+        });
+        this.guardarTokensYRedirigir(respuesta.data);
+      } catch (err) {
+        this.error = err.response?.data?.mensaje || "Error al verificar el código.";
+      }
     },
 
     guardarTokensYRedirigir(data) {
-        localStorage.setItem("token", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        localStorage.setItem("sessionId", data.sessionId);
-        // Descomenta si tu backend devuelve 'nombre' en el login exitoso
-        localStorage.setItem("nombreUsuario", data.nombre);
+      localStorage.setItem("token", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+      localStorage.setItem("sessionId", data.sessionId);
+      localStorage.setItem("nombreUsuario", data.nombre);
+      this.exito = "Login exitoso! Redirigiendo...";
+      setTimeout(() => this.$router.push("/usuario"), 1000);
+    },
 
-        this.exito = "Login exitoso! Redirigiendo...";
-        setTimeout(() => this.$router.push("/usuario"), 1000);
-    }
+    async iniciarConPasskey() {
+      this.error = "";
+      this.exito = "";
+      this.isPasskeyLoading = true;
+
+      try {
+        // 1. Pedir opciones de login al backend
+        const optionsRes = await axios.post(`${API}/auth/passkey/login-options`);
+        
+        console.log('Opciones de autenticación recibidas:', optionsRes.data);
+
+        // 2. Iniciar autenticación en el navegador
+        let authResp;
+        try {
+          authResp = await startAuthentication(optionsRes.data);
+        } catch (err) {
+          if (err.name === 'NotAllowedError') {
+            this.error = "Autenticación con Passkey cancelada.";
+          } else {
+            this.error = `Error del navegador: ${err.message}`;
+          }
+          this.isPasskeyLoading = false;
+          return;
+        }
+
+        console.log("Datos a enviar a /verify-login:", authResp);
+        
+        // 3. Enviar respuesta firmada al backend para verificar
+        const verificationRes = await axios.post(
+          `${API}/auth/passkey/verify-login`,
+          authResp
+        );
+
+        // 4. ¡Éxito! El backend devuelve los tokens
+        this.guardarTokensYRedirigir(verificationRes.data);
+
+      } catch (err) {
+        console.error('Error completo:', err);
+        if (err.name === 'NotAllowedError') {
+          this.error = "Autenticación con Passkey cancelada.";
+        } else {
+          this.error = err.response?.data?.mensaje || "Error al iniciar sesión con Passkey.";
+        }
+      } finally {
+        this.isPasskeyLoading = false;
+      }
+    },
   },
 };
 </script>
@@ -249,6 +283,27 @@ export default {
   border-radius: 8px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.btn-passkey {
+  margin-top: 15px; /* Espacio arriba */
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  background-color: #27ae60; /* Verde */
+  transition: 0.2s all;
+  width: 100%; /* Igual que el botón de login normal */
+}
+.btn-passkey:hover {
+  background-color: #229954;
+}
+.btn-passkey:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
 }
 
 .password-field {
